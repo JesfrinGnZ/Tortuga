@@ -1,0 +1,445 @@
+/*--------------- 1ra Area: Codigo de Usuario -----------------------*/
+//-------> importaciones, paquetes
+
+package backend.analizadorInstrucciones;
+import java_cup.runtime.*;
+import frontend.gui.FramePrincipal;
+import calculosTortuga.*;
+import java.util.HashMap;
+
+
+
+
+parser code {:
+
+    FramePrincipal miFrame;
+    boolean existioErrorSemantico;
+    Tortuga tortuga;
+    HashMap<String, Integer> variablesPrograma;
+    
+
+    // Connect this parser to a scanner!
+    public parser(AnalizadorInstrucciones lex,FramePrincipal miFrame,Tortuga tortuga,HashMap<String, Integer> variablesPrograma) {
+	super(lex);
+        this.miFrame=miFrame;
+        this.existioErrorSemantico=false;
+        this.tortuga=tortuga;
+        this.variablesPrograma=variablesPrograma;
+
+    }
+
+    //Metodo al que se llama automaticamente ante algun error sintactico
+    public void syntax_error(Symbol s){        
+        //System.out.println("ERROR EN ESTRUCTURA");
+    }
+
+    //Metodo al que se llama en el momento en que ya no es posible una recuperacion de errores
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{        
+                //System.out.println("ERROR EN ESTRUCTURA");
+    }
+
+    public Double operarElementos(Double num1,Double num2,char tipoDeOperacion){
+        switch(tipoDeOperacion){
+            case '+':
+                return num1+num2;
+            case '-':
+                return num1-num2;
+            case '*':
+                return num1*num2;
+            case '/':
+                return num1/num2;
+        }
+    return 0.0;
+    }
+    
+    //Solo para buscar valor de una variable, para usarla dentro de una expresion 
+    public Integer buscarValorDeIdentificador(String id){
+        Integer valor =variablesPrograma.get(id);
+        if (valor == null){
+            miFrame.escribirMensaje("ERROR semantico la variable:"+id+" no ha sido declarada\n");
+            existioErrorSemantico=true;
+            return 0;
+        }
+        return valor;
+    }
+
+    //Solo para crear variables sin expresion
+    public void crearVariable(String id){
+        Integer valor =variablesPrograma.get(id);
+        if(valor==null){//Aun no existe la variable y se crea
+            variablesPrograma.put(id,0);
+            miFrame.escribirMensaje("Creacion de variable:"+id+"\n");
+        }else{//Mandar mensaje de error semantico, que ya existe la variable
+            miFrame.escribirMensaje("ERROR semantico la variable:"+id+" ya ha sido declarada\n");
+            existioErrorSemantico=true;
+        }
+    }
+
+    //Para crear variables con expresion
+    public void crearVaribleMasExpresion(String id,String valorCadena){
+        String nuevoNumero="";
+        for (int i = 0; i < valorCadena.length(); i++) {
+           if(valorCadena.charAt(i)=='.'){
+               break;
+           }
+           nuevoNumero+=valorCadena.charAt(i);
+        }
+        variablesPrograma.put(id,Integer.valueOf(nuevoNumero));
+        miFrame.escribirMensaje("Se creo el identificador:"+id+" con valor de:"+nuevoNumero+"\n");
+    }
+
+    //Operacion para transformar resultado de una cadena 
+    public int transformarResultadoDeExpresion(String valorCadena){
+        String nuevoNumero="";
+            for (int i = 0; i < valorCadena.length(); i++) {
+                if(valorCadena.charAt(i)=='.'){
+                break;
+           }
+        nuevoNumero+=valorCadena.charAt(i);
+        }
+        return Integer.valueOf(nuevoNumero);
+    }
+    //Operacion para verificar si solo es un digito
+    public String verificarQueColorSoloSeaUnDigito(String digito){
+        if(digito.length()>1){
+            miFrame.escribirMensaje("El numero especificado debe ser entre 0-9\n");
+            return "10";
+        }else{
+             miFrame.escribirMensaje("Asignacion de color\n");
+            return digito;
+        }
+    }
+
+:}
+
+
+/*--------------- 2da Area: Declaraciones -----------------------*/
+
+//---------------------------------------------TERMINALES-----------------------------------
+
+terminal Object         ERROR_LEXICO;//Error lexico
+
+terminal String         IDENTIFICADOR;
+
+terminal String         COMENTARIO;
+
+terminal String         NUMERO,IGUAL,MAS,MENOS,POR,DIV,PARENTESIS_ABIERTO,PARENTESIS_CERRADO;//Expresiones matematicas
+
+terminal String         FORWARD,FD;
+terminal String         BACKWARD,BK;
+terminal String         RIGHT,RT;
+terminal String         LEFT,LT;
+terminal String         CLEARS,CS;
+terminal String         PEN_UP,PU;
+terminal String         PEN_DOWN,PD;
+terminal String         TO_CENTER,CR;
+terminal String         COLOR,CODIGO_COLOR;
+terminal String         POSITION_XY,POS_XY;
+terminal String         POSITION_X,POS_X;
+terminal String         POSITION_Y,POS_Y;
+terminal String         HIDE_TURTLE,HT;
+terminal String         SHOW_TURTLE,ST;
+terminal String         TO_ERASE,TE;
+terminal String         TO_DRAW,TD;
+terminal String         REPEAT,CORCHETE_ABIERTO,CORCHETE_CERRADO;
+terminal String         COMA;
+
+
+
+//--------------------------------------------NO TERMINALES-------------------------------------
+
+non terminal Object     instruccion;//Inicio de gramatica
+
+non terminal Object     expresion,t,f; //Expresiones matematicas
+
+non terminal Object     conjuntoDeInstrucciones,unaInstruccion;
+/*--------------- 3ra Area: Reglas Semanticas -----------------------*/
+
+start with instruccion;
+
+
+ //----------------------------------------------------IDENTIFICADOR-------------------------------
+
+instruccion::= IDENTIFICADOR:i 
+               {:crearVariable(i);:}|//Buscar si existe la variable
+               
+               IDENTIFICADOR:i IGUAL expresion:e
+               {:if(!existioErrorSemantico)crearVaribleMasExpresion(i,e.toString());:}|
+
+               IDENTIFICADOR:i  COMENTARIO
+               {:crearVariable(i);:}|//Buscar si existe la variable
+               
+                IDENTIFICADOR:i IGUAL expresion:e COMENTARIO
+               {:if(!existioErrorSemantico)crearVaribleMasExpresion(i,e.toString());:}|
+               
+               error{:miFrame.escribirMensaje("ERROR sintactico la instruccion esta mal formada \n");;:};
+
+
+ //----------------------------------------------------Forward (fd)-------------------------------
+
+instruccion::= FORWARD expresion:e
+               {: if(!existioErrorSemantico){tortuga.dibujarLinea(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia delante:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               FD expresion:e
+               {: if(!existioErrorSemantico){tortuga.dibujarLinea(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia delante:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+                FORWARD expresion:e COMENTARIO
+               {: if(!existioErrorSemantico){tortuga.dibujarLinea(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia delante:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               FD expresion:e COMENTARIO
+               {:if(!existioErrorSemantico){tortuga.dibujarLinea(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia delante:"+transformarResultadoDeExpresion(e.toString())+"\n");}:};
+//------------------------------------------------------Backward (bk)------------------------------------
+
+instruccion::= BACKWARD expresion:e
+               {: if(!existioErrorSemantico){tortuga.dibujarLineaDeReversa(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia atras:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               BK expresion:e
+               {:if(!existioErrorSemantico){tortuga.dibujarLineaDeReversa(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia atras:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               BACKWARD expresion:e COMENTARIO
+               {: if(!existioErrorSemantico){tortuga.dibujarLineaDeReversa(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia atras:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               BK expresion:e COMENTARIO
+               {: if(!existioErrorSemantico){tortuga.dibujarLineaDeReversa(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Movimiento hacia atras:"+transformarResultadoDeExpresion(e.toString())+"\n");}:};
+//------------------------------------------------------Right (rt)----------------------------------------
+instruccion::= RIGHT expresion:e
+               {: if(!existioErrorSemantico){tortuga.setDireccionRight(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la derecha:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               RT expresion:e
+               {:if(!existioErrorSemantico){tortuga.setDireccionRight(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la derecha:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               RIGHT expresion:e COMENTARIO
+               {:if(!existioErrorSemantico){tortuga.setDireccionRight(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la derecha:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               RT expresion:e COMENTARIO
+               {:if(!existioErrorSemantico){tortuga.setDireccionRight(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la derecha:"+transformarResultadoDeExpresion(e.toString())+"\n");}:};
+//------------------------------------------------------Left (lt)-----------------------------------------
+instruccion::= LEFT expresion:e
+               {:if(!existioErrorSemantico){tortuga.setDireccionLeft(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la izquierda:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               LT expresion:e
+               {:if(!existioErrorSemantico){tortuga.setDireccionLeft(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la izquierda:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               LEFT expresion:e COMENTARIO
+               {:if(!existioErrorSemantico){tortuga.setDireccionLeft(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la izquierda:"+transformarResultadoDeExpresion(e.toString())+"\n");}:}|
+               LT expresion:e COMENTARIO
+               {:if(!existioErrorSemantico){tortuga.setDireccionLeft(transformarResultadoDeExpresion(e.toString()));miFrame.escribirMensaje("Giro hacia la izquierda:"+transformarResultadoDeExpresion(e.toString())+"\n");}:};
+//------------------------------------------------------Clears (cs)--------------------------------------
+instruccion::= CLEARS
+               {:tortuga.clearLienzo();miFrame.escribirMensaje("La patalla se ha limpiado\n");:}|
+               CS 
+               {:tortuga.clearLienzo();miFrame.escribirMensaje("La patalla se ha limpiado\n");:}|
+               CLEARS COMENTARIO
+               {:tortuga.clearLienzo();miFrame.escribirMensaje("La patalla se ha limpiado\n");:}|
+               CS COMENTARIO
+               {:tortuga.clearLienzo();miFrame.escribirMensaje("La patalla se ha limpiado\n");:};
+//-------------------------------------------------------PenUp (pu)--------------------------------------
+instruccion::= PEN_UP
+               {:tortuga.setDebeDejarRastro(false);miFrame.escribirMensaje("Pluma arriba\n");:}|
+               PU 
+               {:tortuga.setDebeDejarRastro(false);miFrame.escribirMensaje("Pluma arriba\n");:}|
+               PEN_UP  COMENTARIO
+               {:tortuga.setDebeDejarRastro(false);miFrame.escribirMensaje("Pluma arriba\n");:}|
+               PU  COMENTARIO
+               {:tortuga.setDebeDejarRastro(false);miFrame.escribirMensaje("Pluma arriba\n");:};
+//-------------------------------------------------------PenDown (pd)------------------------------------
+instruccion::= PEN_DOWN 
+               {:tortuga.setDebeDejarRastro(true);miFrame.escribirMensaje("Pluma abajo\n");:}|
+               PD 
+               {:tortuga.setDebeDejarRastro(true);miFrame.escribirMensaje("Pluma abajo\n");:}|
+               PEN_DOWN  COMENTARIO
+               {:tortuga.setDebeDejarRastro(true);miFrame.escribirMensaje("Pluma abajo\n");:}|
+               PD  COMENTARIO
+               {:tortuga.setDebeDejarRastro(true);miFrame.escribirMensaje("Pluma abajo\n");:};
+//-------------------------------------------------------ToCenter (cr)------------------------------------
+instruccion::= TO_CENTER 
+               {:tortuga.moverTortugaAlCentro();miFrame.escribirMensaje("Movimiento al centro:350,200\n");:}|
+               CR 
+               {:tortuga.moverTortugaAlCentro();miFrame.escribirMensaje("Movimiento al centro:350,200\n");:}|
+               TO_CENTER  COMENTARIO
+               {:tortuga.moverTortugaAlCentro();miFrame.escribirMensaje("Movimiento al centro:350,200\n");:}|
+               CR  COMENTARIO
+               {:tortuga.moverTortugaAlCentro();miFrame.escribirMensaje("Movimiento al centro:350,200\n");:};
+//-------------------------------------------------------Color (sin abreviación)--------------------------
+instruccion::= COLOR expresion:e//Debe ser un numero entre 0-9
+               {:tortuga.setColorNumero(verificarQueColorSoloSeaUnDigito(e.toString()));:}|
+               COLOR expresion:e COMENTARIO
+               {:tortuga.setColorNumero(verificarQueColorSoloSeaUnDigito(e.toString()));:}|
+               COLOR CODIGO_COLOR:e//Debe ser un numero entre 0-9
+               {: tortuga.setColorHexadecimal(e.toString());miFrame.escribirMensaje("Asignacion de color\n");:}|
+               COLOR CODIGO_COLOR:e COMENTARIO
+               {:tortuga.setColorHexadecimal(e.toString());miFrame.escribirMensaje("Asignacion de color\n");:};
+//-------------------------------------------------------PositionXY (posxy)-------------------------------
+instruccion::= POSITION_XY NUMERO:n1 COMA NUMERO:n2
+               {:tortuga.nuevoPuntoFinalXY(n1,n2);miFrame.escribirMensaje("Nueva posicion xy:"+n1+","+n2+"\n");:}|
+               POS_XY  NUMERO:n1 COMA NUMERO:n2
+               {:tortuga.nuevoPuntoFinalXY(n1,n2);miFrame.escribirMensaje("Nueva posicion xy:"+n1+","+n2+"\n");:}|
+               POSITION_XY NUMERO:n1 COMA NUMERO:n2 COMENTARIO
+               {:tortuga.nuevoPuntoFinalXY(n1,n2);miFrame.escribirMensaje("Nueva posicion xy:"+n1+","+n2+"\n");:}|
+               POS_XY  NUMERO:n1 COMA NUMERO:n2 COMENTARIO
+               {:tortuga.nuevoPuntoFinalXY(n1,n2);miFrame.escribirMensaje("Nueva posicion xy:"+n1+","+n2+"\n");:};
+
+//--------------------------------------------------------PositionX (posX)--------------------------------
+instruccion::= POSITION_X NUMERO:n1 
+               {:tortuga.nuevoPuntoFinalX(n1);miFrame.escribirMensaje("Nueva posicion x:"+n1+"\n");:}|
+               POS_X  NUMERO:n1 
+               {:tortuga.nuevoPuntoFinalX(n1);miFrame.escribirMensaje("Nueva posicion x:"+n1+"\n");:}|
+               POSITION_X NUMERO:n1 COMENTARIO
+               {:tortuga.nuevoPuntoFinalX(n1);miFrame.escribirMensaje("Nueva posicion x:"+n1+"\n");:}|
+               POS_X  NUMERO:n1 COMENTARIO
+               {:tortuga.nuevoPuntoFinalX(n1);miFrame.escribirMensaje("Nueva posicion x:"+n1+"\n");:};
+//--------------------------------------------------------PositionY (posY)-------------------------------
+instruccion::= POSITION_Y NUMERO:n1 
+               {:tortuga.nuevoPuntoFinaly(n1);miFrame.escribirMensaje("Nueva posicion y:"+n1+"\n");:}|
+               POS_Y  NUMERO:n1 
+               {:tortuga.nuevoPuntoFinaly(n1);miFrame.escribirMensaje("Nueva posicion y:"+n1+"\n");:}|
+               POSITION_Y NUMERO:n1 COMENTARIO
+               {:tortuga.nuevoPuntoFinaly(n1);miFrame.escribirMensaje("Nueva posicion y:"+n1+"\n");:}|
+               POS_Y  NUMERO:n1 COMENTARIO
+               {:tortuga.nuevoPuntoFinaly(n1);miFrame.escribirMensaje("Nueva posicion y:"+n1+"\n");:};
+//--------------------------------------------------------HideTurtle (ht)--------------------------------
+instruccion::= HIDE_TURTLE 
+               {:tortuga.ocultarTortuga();miFrame.escribirMensaje("Se oculto la tortuga \n");:}|
+               HT
+               {:tortuga.ocultarTortuga();miFrame.escribirMensaje("Se oculto la tortuga \n");:}|
+               HIDE_TURTLE  COMENTARIO
+               {:tortuga.ocultarTortuga();miFrame.escribirMensaje("Se oculto la tortuga \n");:}|
+               HT  COMENTARIO
+               {:tortuga.ocultarTortuga();miFrame.escribirMensaje("Se oculto la tortuga \n");:};
+//--------------------------------------------------------ShowTurtle (st)---------------------------------
+instruccion::= SHOW_TURTLE 
+               {:tortuga.mostrarTortuga();miFrame.escribirMensaje("Tortuga visible\n");:}|
+               ST 
+               {:tortuga.mostrarTortuga();miFrame.escribirMensaje("Tortuga visible\n");:}|
+               SHOW_TURTLE  COMENTARIO
+               {:tortuga.mostrarTortuga();miFrame.escribirMensaje("Tortuga visible\n");:}|
+               ST  COMENTARIO
+               {:tortuga.mostrarTortuga();miFrame.escribirMensaje("Tortuga visible \n");:};
+//--------------------------------------------------------ToErase (te)------------------------------------
+instruccion::= TO_ERASE 
+               {:tortuga.activarBorrador();miFrame.escribirMensaje("Borrador activado \n");:}|
+               TE 
+               {:tortuga.activarBorrador();miFrame.escribirMensaje("Borrador activado \n");:}|
+               TO_ERASE  COMENTARIO
+               {:tortuga.activarBorrador();miFrame.escribirMensaje("Borrador activado \n");:}|
+               TE  COMENTARIO
+               {:tortuga.activarBorrador();miFrame.escribirMensaje("Borrador activado \n");:};
+//--------------------------------------------------------ToDraw (td)-------------------------------------
+instruccion::= TO_DRAW 
+               {:tortuga.desactivarBorrador();miFrame.escribirMensaje("Dibujador(ToDraw) activado \n");:}|
+               TD
+               {:tortuga.desactivarBorrador();miFrame.escribirMensaje("Dibujador(ToDraw) activado \n");:}|
+               TO_DRAW  COMENTARIO
+               {:tortuga.desactivarBorrador();miFrame.escribirMensaje("Dibujador(ToDraw) activado \n");:}|
+               TD  COMENTARIO
+               {:tortuga.desactivarBorrador();miFrame.escribirMensaje("Dibujador(ToDraw) activado \n");:};
+//--------------------------------------------------------Repeat (sin abreviación)------------------------
+
+instruccion::= REPEAT expresion CORCHETE_ABIERTO conjuntoDeInstrucciones CORCHETE_CERRADO;
+
+conjuntoDeInstrucciones ::= conjuntoDeInstrucciones unaInstruccion;
+
+unaInstruccion::=  REPEAT expresion CORCHETE_ABIERTO conjuntoDeInstrucciones CORCHETE_CERRADO;
+
+unaInstruccion::=IDENTIFICADOR:i 
+               {::}|//Solo texto
+               IDENTIFICADOR:i IGUAL expresion:e
+               {::};//Solo texto
+
+unaInstruccion::=FORWARD expresion:e
+               {::}|
+               FD expresion:e
+               {::};
+unaInstruccion::=BACKWARD expresion:e
+                {::}|
+                BK expresion:e
+                {::};
+
+unaInstruccion::=RIGHT expresion:e
+                {::}|
+               RT expresion:e
+                {::};
+
+unaInstruccion::=LEFT expresion:e
+                {::}|
+                LT expresion:e
+                {::};
+
+unaInstruccion::=CLEARS
+               {::}|
+               CS 
+               {::};
+
+unaInstruccion::=PEN_UP
+               {::}|
+               PU 
+               {::};
+
+unaInstruccion::=PEN_DOWN 
+               {::}|
+               PD 
+               {::};
+
+unaInstruccion::=TO_CENTER 
+                {::}|
+                CR 
+                {::};
+
+unaInstruccion::=COLOR expresion:e//Debe ser un numero entre 0-9
+               {::}|
+               COLOR CODIGO_COLOR:e
+               {::};
+
+unaInstruccion::=POSITION_XY NUMERO:n1 COMA NUMERO:n2
+               {::}|
+               POS_XY  NUMERO:n1 COMA NUMERO:n2
+               {::};
+
+unaInstruccion::=POSITION_X NUMERO:n1 
+               {::}|
+               POS_X  NUMERO:n1 
+               {::};
+
+unaInstruccion::=POSITION_Y NUMERO:n1
+               {::}|
+               POS_Y  NUMERO:n1 
+               {::};
+
+unaInstruccion::=HIDE_TURTLE 
+               {::}|
+               HT
+               {::};
+
+unaInstruccion::=SHOW_TURTLE 
+               {::}|
+               ST 
+               {::};
+
+unaInstruccion::=TO_ERASE 
+                {::}|
+                TE 
+                {::};
+
+unaInstruccion::=TO_DRAW 
+               {::}|
+               TD expresion:e
+               {::};
+
+ //----------------------------------------------------EXPRESIONES MATEMATICAS-------------------------------
+expresion::=expresion:i MAS t:e
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'+');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'+'));:};
+
+expresion::=expresion:i MENOS t:e
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'-');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'-'));:};
+
+expresion::=t:i
+    {:RESULT=i;System.out.println("Valor en t:"+i);:};
+
+
+t::=t:i POR f:e
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'*');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'*'));:};
+
+t::=t:i DIV f:e
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'/');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'/'));:};
+
+t::=f:i
+    {:RESULT=i;:};
+
+
+f::=IDENTIFICADOR:i//Se debe buscar el identificador, y si se encuenra RESULT=valor de lo contrario mostrar error
+    {:RESULT=buscarValorDeIdentificador(i.toString());System.out.println("IDENTIFICADOR:"+i);:};
+
+f::=NUMERO:i
+    {:RESULT=i;System.out.println("NUMERO:"+i);:};
+
+f::=PARENTESIS_ABIERTO expresion:i PARENTESIS_CERRADO
+    {:RESULT=i;:};
