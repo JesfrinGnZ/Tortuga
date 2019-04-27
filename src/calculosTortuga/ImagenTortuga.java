@@ -39,9 +39,7 @@ public class ImagenTortuga {
         Double posX = this.puntoInicial.getX() + calculo.getX();
         Double posY = this.puntoInicial.getY() - calculo.getY();
         int posicionX = (int) Math.round(posX);
-        System.out.println("PosicionX:" + posicionX);
         int posicionY = (int) Math.round(posY);
-        System.out.println("PosicionY:" + posicionY);
         //Se le asigna el nuevo punto
         this.puntoFinal = new Point(posicionX, posicionY);
         if (debeDibujarse) {

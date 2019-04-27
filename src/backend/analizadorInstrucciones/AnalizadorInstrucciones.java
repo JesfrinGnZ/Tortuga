@@ -895,12 +895,12 @@ public class AnalizadorInstrucciones implements java_cup.runtime.Scanner {
             // fall through
           case 58: break;
           case 11: 
-            { return symbol(CORCHETE_CERRADO,yytext());
+            { return symbol(CORCHETE_ABIERTO,yytext());
             } 
             // fall through
           case 59: break;
           case 12: 
-            { return symbol(CORCHETE_ABIERTO,yytext());
+            { return symbol(CORCHETE_CERRADO,yytext());
             } 
             // fall through
           case 60: break;

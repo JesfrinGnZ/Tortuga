@@ -82,6 +82,7 @@ public class FramePrincipal extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         borrarInstruccionesButton = new javax.swing.JButton();
         guardarInstruccionesButton = new javax.swing.JButton();
+        borrarMensjaesButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         salirMenu = new javax.swing.JMenu();
@@ -202,7 +203,7 @@ public class FramePrincipal extends javax.swing.JFrame {
 
         jLabel5.setText("Mensajes");
 
-        borrarInstruccionesButton.setText("Borrar");
+        borrarInstruccionesButton.setText("Borrar instrucciones");
         borrarInstruccionesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 borrarInstruccionesButtonActionPerformed(evt);
@@ -216,6 +217,13 @@ public class FramePrincipal extends javax.swing.JFrame {
             }
         });
 
+        borrarMensjaesButton.setText("Borrar mensajes");
+        borrarMensjaesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                borrarMensjaesButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -225,7 +233,7 @@ public class FramePrincipal extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(instruccionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 691, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jScrollPane2)
                         .addGap(39, 39, 39)))
@@ -242,7 +250,9 @@ public class FramePrincipal extends javax.swing.JFrame {
                 .addComponent(guardarInstruccionesButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(borrarInstruccionesButton)
-                .addGap(478, 478, 478))
+                .addGap(397, 397, 397)
+                .addComponent(borrarMensjaesButton)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -255,12 +265,16 @@ public class FramePrincipal extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(instruccionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
                     .addComponent(jScrollPane3))
                 .addGap(12, 12, 12)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(borrarInstruccionesButton)
                     .addComponent(guardarInstruccionesButton)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(262, Short.MAX_VALUE)
+                .addComponent(borrarMensjaesButton)
+                .addContainerGap())
         );
 
         jLabel2.setText("Area de dibujo");
@@ -401,10 +415,12 @@ public class FramePrincipal extends javax.swing.JFrame {
         if (rutaDeArchivo == null || texto.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No existe texto para analizar");
         } else {
+            this.mensajesTextArea.append("-------------------------------INICIO ANALISIS ARCHIVO-----------------------\n");
             String[] instrucciones = texto.split("\n");
             for (int i = 0; i < instrucciones.length; i++) {
                 analizarExpresion(instrucciones[i], this.variablesDeArchivo);
             }
+            this.mensajesTextArea.append("-------------------------------FIN ANALISIS ARCHIVO-----------------------\n");
         }
     }//GEN-LAST:event_ejecutarButtonActionPerformed
 
@@ -412,10 +428,15 @@ public class FramePrincipal extends javax.swing.JFrame {
         guardarComo(this.instruccionesTextArea);
     }//GEN-LAST:event_guardarInstruccionesButtonActionPerformed
 
+    private void borrarMensjaesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_borrarMensjaesButtonActionPerformed
+        this.mensajesTextArea.setText("");
+    }//GEN-LAST:event_borrarMensjaesButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton abrirArchivoButton;
     private javax.swing.JButton borrarInstruccionesButton;
+    private javax.swing.JButton borrarMensjaesButton;
     private javax.swing.JDesktopPane contenedorDesktopPane;
     private javax.swing.JButton ejecutarButton;
     private javax.swing.JButton guardarArchivoButton;

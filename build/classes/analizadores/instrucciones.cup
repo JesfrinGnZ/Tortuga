@@ -6,6 +6,7 @@ import java_cup.runtime.*;
 import frontend.gui.FramePrincipal;
 import calculosTortuga.*;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 
 
@@ -16,6 +17,7 @@ parser code {:
     boolean existioErrorSemantico;
     Tortuga tortuga;
     HashMap<String, Integer> variablesPrograma;
+    ArrayList<String> instrucciones;
     
 
     // Connect this parser to a scanner!
@@ -25,7 +27,7 @@ parser code {:
         this.existioErrorSemantico=false;
         this.tortuga=tortuga;
         this.variablesPrograma=variablesPrograma;
-
+        this.instrucciones= new ArrayList<>();
     }
 
     //Metodo al que se llama automaticamente ante algun error sintactico
@@ -324,122 +326,133 @@ instruccion::= TO_DRAW
                {:tortuga.desactivarBorrador();miFrame.escribirMensaje("Dibujador(ToDraw) activado \n");:};
 //--------------------------------------------------------Repeat (sin abreviación)------------------------
 
-instruccion::= REPEAT expresion CORCHETE_ABIERTO conjuntoDeInstrucciones CORCHETE_CERRADO;
+instruccion::= REPEAT expresion:e CORCHETE_ABIERTO conjuntoDeInstrucciones CORCHETE_CERRADO
+               {:
+               if(!existioErrorSemantico){
+                  ManejadorDeRepeat manejador = new ManejadorDeRepeat(transformarResultadoDeExpresion(e.toString()),instrucciones, tortuga, miFrame);
+                  manejador.trabajarLasInstrucciones(variablesPrograma);
+               }
+                :}|
+               REPEAT expresion:e CORCHETE_ABIERTO conjuntoDeInstrucciones CORCHETE_CERRADO COMENTARIO
+               {:
+               if(!existioErrorSemantico){
+                  ManejadorDeRepeat manejador = new ManejadorDeRepeat(transformarResultadoDeExpresion(e.toString()),instrucciones, tortuga, miFrame);
+                  manejador.trabajarLasInstrucciones(variablesPrograma);
+               }
+                :};
 
-conjuntoDeInstrucciones ::= conjuntoDeInstrucciones unaInstruccion;
-
-unaInstruccion::=  REPEAT expresion CORCHETE_ABIERTO conjuntoDeInstrucciones CORCHETE_CERRADO;
+conjuntoDeInstrucciones ::= conjuntoDeInstrucciones unaInstruccion|unaInstruccion;
 
 unaInstruccion::=IDENTIFICADOR:i 
-               {::}|//Solo texto
-               IDENTIFICADOR:i IGUAL expresion:e
-               {::};//Solo texto
+               {:instrucciones.add(i);:}|//Solo texto
+               IDENTIFICADOR:i IGUAL expresion:e//Sustituir donde se tenga e.toString
+               {:instrucciones.add(i+"="+String.valueOf(transformarResultadoDeExpresion(e.toString())));:};//Solo texto
 
-unaInstruccion::=FORWARD expresion:e
-               {::}|
-               FD expresion:e
-               {::};
-unaInstruccion::=BACKWARD expresion:e
-                {::}|
-                BK expresion:e
-                {::};
+unaInstruccion::=FORWARD:i expresion:e
+               {:instrucciones.add(i+" "+e.toString());:}|
+               FD:i expresion:e
+               {:instrucciones.add(i+" "+e.toString());:};
+unaInstruccion::=BACKWARD:i expresion:e
+                {:instrucciones.add(i+" "+e.toString());:}|
+                BK:i expresion:e
+                {:instrucciones.add(i+" "+e.toString());:};
 
-unaInstruccion::=RIGHT expresion:e
-                {::}|
-               RT expresion:e
-                {::};
+unaInstruccion::=RIGHT:i expresion:e
+                {:instrucciones.add(i+" "+e.toString());:}|
+               RT:i expresion:e
+                {:instrucciones.add(i+" "+e.toString());:};
 
-unaInstruccion::=LEFT expresion:e
-                {::}|
-                LT expresion:e
-                {::};
+unaInstruccion::=LEFT:i expresion:e
+                {:instrucciones.add(i+" "+e.toString());:}|
+                LT:i expresion:e
+                {:instrucciones.add(i+" "+e.toString());:};
 
-unaInstruccion::=CLEARS
-               {::}|
-               CS 
-               {::};
+unaInstruccion::=CLEARS:i
+               {:instrucciones.add(i);:}|
+               CS:i 
+               {:instrucciones.add(i);:};
 
-unaInstruccion::=PEN_UP
-               {::}|
-               PU 
-               {::};
+unaInstruccion::=PEN_UP:i
+               {:instrucciones.add(i);:}|
+               PU:i 
+               {:instrucciones.add(i);:};
 
-unaInstruccion::=PEN_DOWN 
-               {::}|
-               PD 
-               {::};
+unaInstruccion::=PEN_DOWN:i 
+               {:instrucciones.add(i);:}|
+               PD:i 
+               {:instrucciones.add(i);:};
 
-unaInstruccion::=TO_CENTER 
-                {::}|
-                CR 
-                {::};
+unaInstruccion::=TO_CENTER:i 
+                {:instrucciones.add(i);:}|
+                CR:i 
+                {:instrucciones.add(i);:};
 
-unaInstruccion::=COLOR expresion:e//Debe ser un numero entre 0-9
-               {::}|
-               COLOR CODIGO_COLOR:e
-               {::};
+unaInstruccion::=COLOR:i expresion:e//Debe ser un numero entre 0-9
+               {:instrucciones.add(i+" "+e.toString());:}|
+               COLOR:i CODIGO_COLOR:e
+               {:instrucciones.add(i+" "+e.toString());:};
 
-unaInstruccion::=POSITION_XY NUMERO:n1 COMA NUMERO:n2
-               {::}|
-               POS_XY  NUMERO:n1 COMA NUMERO:n2
-               {::};
+unaInstruccion::=POSITION_XY:i NUMERO:n1 COMA NUMERO:n2
+               {:instrucciones.add(i+" "+n1+","+"n2");:}|
+               POS_XY:i  NUMERO:n1 COMA NUMERO:n2
+               {:instrucciones.add(i+" "+n1+","+"n2");:};
 
-unaInstruccion::=POSITION_X NUMERO:n1 
-               {::}|
-               POS_X  NUMERO:n1 
-               {::};
+unaInstruccion::=POSITION_X:i NUMERO:n1 
+               {:instrucciones.add(i+" "+n1);:}|
+               POS_X:i  NUMERO:n1 
+               {:instrucciones.add(i+" "+n1);:};
 
-unaInstruccion::=POSITION_Y NUMERO:n1
-               {::}|
-               POS_Y  NUMERO:n1 
-               {::};
+unaInstruccion::=POSITION_Y:i NUMERO:n1
+               {:instrucciones.add(i+" "+n1);:}|
+               POS_Y:i  NUMERO:n1 
+               {:instrucciones.add(i+" "+n1);:};
 
-unaInstruccion::=HIDE_TURTLE 
-               {::}|
-               HT
-               {::};
+unaInstruccion::=HIDE_TURTLE:i 
+               {:instrucciones.add(i);:}|
+               HT:i
+               {:instrucciones.add(i);:};
 
-unaInstruccion::=SHOW_TURTLE 
-               {::}|
-               ST 
-               {::};
+unaInstruccion::=SHOW_TURTLE:i 
+               {:instrucciones.add(i);:}|
+               ST:i 
+               {:instrucciones.add(i);:};
 
-unaInstruccion::=TO_ERASE 
-                {::}|
-                TE 
-                {::};
+unaInstruccion::=TO_ERASE:i 
+                {:instrucciones.add(i);:}|
+                TE:i 
+                {:instrucciones.add(i);:};
 
-unaInstruccion::=TO_DRAW 
-               {::}|
-               TD expresion:e
-               {::};
+unaInstruccion::=TO_DRAW:i 
+               {:instrucciones.add(i);:}|
+               TD:i 
+               {:instrucciones.add(i);:};
 
  //----------------------------------------------------EXPRESIONES MATEMATICAS-------------------------------
 expresion::=expresion:i MAS t:e
-    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'+');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'+'));:};
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'+');:};
 
 expresion::=expresion:i MENOS t:e
-    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'-');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'-'));:};
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'-');:};
 
 expresion::=t:i
-    {:RESULT=i;System.out.println("Valor en t:"+i);:};
+    {:RESULT=i;:};
 
 
 t::=t:i POR f:e
-    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'*');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'*'));:};
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'*');:};
 
 t::=t:i DIV f:e
-    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'/');System.out.println("El resultado es:"+operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'/'));:};
+    {:RESULT=operarElementos(Double.valueOf(i.toString()),Double.valueOf(e.toString()),'/');:};
 
 t::=f:i
     {:RESULT=i;:};
 
 
 f::=IDENTIFICADOR:i//Se debe buscar el identificador, y si se encuenra RESULT=valor de lo contrario mostrar error
-    {:RESULT=buscarValorDeIdentificador(i.toString());System.out.println("IDENTIFICADOR:"+i);:};
+    {:RESULT=buscarValorDeIdentificador(i.toString());:};
 
 f::=NUMERO:i
-    {:RESULT=i;System.out.println("NUMERO:"+i);:};
+    {:RESULT=i;:};
 
 f::=PARENTESIS_ABIERTO expresion:i PARENTESIS_CERRADO
     {:RESULT=i;:};

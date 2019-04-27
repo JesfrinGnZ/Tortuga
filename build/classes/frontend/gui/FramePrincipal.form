@@ -232,7 +232,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Component id="instruccionTextField" min="-2" pref="691" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="37" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" attributes="0">
                           <Component id="jScrollPane2" max="32767" attributes="0"/>
@@ -254,7 +254,9 @@
                   <Component id="guardarInstruccionesButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="borrarInstruccionesButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="478" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="397" max="-2" attributes="0"/>
+                  <Component id="borrarMensjaesButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -270,7 +272,7 @@
                       <Group type="102" attributes="0">
                           <Component id="instruccionTextField" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="194" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="200" max="32767" attributes="0"/>
                       </Group>
                       <Component id="jScrollPane3" max="32767" attributes="0"/>
                   </Group>
@@ -279,6 +281,11 @@
                       <Component id="borrarInstruccionesButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="guardarInstruccionesButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
+              </Group>
+              <Group type="102" alignment="1" attributes="0">
+                  <EmptySpace pref="262" max="32767" attributes="0"/>
+                  <Component id="borrarMensjaesButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -333,7 +340,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="borrarInstruccionesButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Borrar"/>
+            <Property name="text" type="java.lang.String" value="Borrar instrucciones"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="borrarInstruccionesButtonActionPerformed"/>
@@ -345,6 +352,14 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="guardarInstruccionesButtonActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="borrarMensjaesButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Borrar mensajes"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="borrarMensjaesButtonActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

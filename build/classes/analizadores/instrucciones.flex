@@ -131,9 +131,9 @@ Digitos= 0|[1-9][:digit:]*
 
    "," {return symbol(COMA,yytext());}
 
-    "]" {return symbol(CORCHETE_ABIERTO,yytext());}
+    "[" {return symbol(CORCHETE_ABIERTO,yytext());}
 
-    "[" {return symbol(CORCHETE_CERRADO,yytext());}
+    "]" {return symbol(CORCHETE_CERRADO,yytext());}
 
    "#"~"\n" {System.out.println("COMENTARIO:"+yytext());return symbol(COMENTARIO,yytext());}
 

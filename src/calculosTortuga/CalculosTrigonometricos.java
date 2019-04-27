@@ -35,8 +35,6 @@ public class CalculosTrigonometricos {
            x = x*Math.cos(theta);
            y = y*Math.sin(theta); 
         }
-        System.out.println("x: "+x);
-        System.out.println("y: "+y);
     }
 
     public double getX() {

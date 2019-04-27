@@ -4,13 +4,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/analizadores/runInstrucciones.sh</file>
+            <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/calculosTortuga/ManejadorDeRepeat.java</file>
             <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/frontend/gui/FramePrincipal.java</file>
             <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/analizadores/instrucciones.cup</file>
             <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/calculosTortuga/Tortuga.java</file>
             <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/analizadores/instrucciones.flex</file>
             <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/backend/analizadorInstrucciones/parser.java</file>
-            <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/backend/analizadorInstrucciones/AnalizadorInstrucciones.java</file>
-            <file>file:/home/jesfrin/NetBeansProjects/Tortuga2/src/calculosTortuga/ImagenTortuga.java</file>
         </group>
     </open-files>
 </project-private>

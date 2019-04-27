@@ -25,14 +25,6 @@ public class Run {
         FramePrincipal miFrame = new FramePrincipal();
         miFrame.setVisible(true);
 
-        //Hash map-->Clave,valor
-        HashMap<String, Integer> variables = new HashMap<>();
-        variables.put("variable1", 25);
-        //System.out.println(variables.get("variable1"));//Devuelve nul si no la encuentra,devuelve el valor si la encuentra
-        if (variables.get("variable1") != null) {
-            System.out.println("Ya existe esa variable");
-        }
-
 //        System.out.println(variables.get("variable1"));//Devuelve nul si no la encuentra,devuelve el valor si la encuentra
     }
 }

@@ -25,21 +25,19 @@ public class ManejadorDeRepeat {
     private int cantidadDeRepeticiones;
     private ArrayList<String> instrucciones;
     private Tortuga tortuga;
-    private HashMap<String, Integer> variablesDePrograma;
     private FramePrincipal frame;
 
-    public ManejadorDeRepeat(int cantidadDeRepeticiones, ArrayList<String> instrucciones, Tortuga tortuga, HashMap<String, Integer> variablesDePrograma, FramePrincipal frame) {
+    public ManejadorDeRepeat(int cantidadDeRepeticiones, ArrayList<String> instrucciones, Tortuga tortuga, FramePrincipal frame) {
         this.cantidadDeRepeticiones = cantidadDeRepeticiones;
         this.instrucciones = instrucciones;
         this.tortuga = tortuga;
-        this.variablesDePrograma = variablesDePrograma;
         this.frame = frame;
     }
 
-    public void analizarExpresion(String instruccion) {
+    private void analizarExpresion(String instruccion,HashMap<String, Integer> variablesDePrograma) {
         AnalizadorInstrucciones lex = new AnalizadorInstrucciones(new BufferedReader(new StringReader(instruccion)));
         lex.iniciarFrame(this.frame);
-        parser sintactico = new parser(lex, this.frame, this.tortuga, this.variablesDePrograma);
+        parser sintactico = new parser(lex, this.frame, this.tortuga, variablesDePrograma);
         try {
             sintactico.parse();
         } catch (Exception ex) {
@@ -47,10 +45,10 @@ public class ManejadorDeRepeat {
         }
     }
 
-    public void trabajarLasInstrucciones() {
+    public void trabajarLasInstrucciones(HashMap<String, Integer> variablesDePrograma) {
         for (int i = 0; i < cantidadDeRepeticiones; i++) {
             for (String instruccion : instrucciones) {
-                analizarExpresion(instruccion);
+                analizarExpresion(instruccion,variablesDePrograma);
             }
         }
     }
